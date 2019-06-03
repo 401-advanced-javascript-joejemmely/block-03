@@ -40,7 +40,7 @@ module.exports = capability => {
      * @param {string} authString
      */
     function _authBearer(authString) {
-      return User.authenticateToken(authString)
+      return User.authenticateBearer(authString)
         .then(user => _authenticate(user))
         .catch(_authError);
     }

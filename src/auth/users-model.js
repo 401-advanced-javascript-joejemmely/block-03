@@ -84,7 +84,7 @@ users.statics.createFromOauth = function(email) {
  * Authenticate with token
  * @param {string} token
  */
-users.statics.authenticateToken = function(token) {
+users.statics.authenticateBearer = function(token) {
   if (usedTokens.has(token)) {
     return Promise.reject('Invalid Token');
   }
