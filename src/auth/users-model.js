@@ -7,7 +7,7 @@ require('./roles-model.js');
 
 const SINGLE_USE_TOKENS = !!process.env.SINGLE_USE_TOKENS;
 const TOKEN_EXPIRE = process.env.TOKEN_LIFETIME || '5m';
-const SECRET = process.env.SECRET || 'foobar';
+const SECRET = process.env.SECRET;
 
 const usedTokens = new Set();
 
@@ -21,6 +21,9 @@ const users = new mongoose.Schema(
   { toObject: { virtuals: true }, toJSON: { virtuals: true } }
 );
 
+/**
+ * Create a virtual of the capabilities into the user
+ */
 users.virtual('capabilities', {
   ref: 'roles',
   localField: 'role',
@@ -28,6 +31,9 @@ users.virtual('capabilities', {
   justOne: false,
 });
 
+/**
+ * Mongoose Hook - Populate the capabilites into the user
+ */
 users.pre('findOne', function() {
   try {
     this.populate('capabilities');
@@ -36,6 +42,9 @@ users.pre('findOne', function() {
   }
 });
 
+/**
+ * Hash the password before saving into the DB
+ */
 users.pre('save', function(next) {
   bcrypt
     .hash(this.password, 10)
@@ -48,6 +57,10 @@ users.pre('save', function(next) {
     });
 });
 
+/**
+ * Create user from OAuth
+ * @param {string} email
+ */
 users.statics.createFromOauth = function(email) {
   if (!email) {
     return Promise.reject('Validation Error');
@@ -67,6 +80,10 @@ users.statics.createFromOauth = function(email) {
     });
 };
 
+/**
+ * Authenticate with token
+ * @param {string} token
+ */
 users.statics.authenticateToken = function(token) {
   if (usedTokens.has(token)) {
     return Promise.reject('Invalid Token');
@@ -82,6 +99,9 @@ users.statics.authenticateToken = function(token) {
   }
 };
 
+/**
+ * Authenticate with username:password
+ */
 users.statics.authenticateBasic = function(auth) {
   let query = { username: auth.username };
   return this.findOne(query)
@@ -91,12 +111,18 @@ users.statics.authenticateBasic = function(auth) {
     });
 };
 
+/**
+ * Check if the provided password match the one in the DB
+ */
 users.methods.comparePassword = function(password) {
   return bcrypt
     .compare(password, this.password)
     .then(valid => (valid ? this : null));
 };
 
+/**
+ * Generate a token
+ */
 users.methods.generateToken = function(type) {
   let token = {
     id: this._id,
@@ -112,11 +138,17 @@ users.methods.generateToken = function(type) {
   return jwt.sign(token, SECRET, options);
 };
 
+/**
+ * Check if a user can do what he wants to do
+ */
 users.methods.can = function(capability) {
   const capabilities = this.capabilities[0].capabilities;
   return capabilities.includes(capability);
 };
 
+/**
+ * Generate a login key
+ */
 users.methods.generateKey = function() {
   return this.generateToken('key');
 };

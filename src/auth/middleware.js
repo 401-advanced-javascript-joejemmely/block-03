@@ -19,6 +19,10 @@ module.exports = capability => {
       _authError();
     }
 
+    /**
+     * Authenticate with username:password
+     * @param {string} str
+     */
     function _authBasic(str) {
       // str: am9objpqb2hubnk=
       let base64Buffer = Buffer.from(str, 'base64'); // <Buffer 01 02 ...>
@@ -31,12 +35,20 @@ module.exports = capability => {
         .catch(_authError);
     }
 
+    /**
+     * Authenticate with token
+     * @param {string} authString
+     */
     function _authBearer(authString) {
       return User.authenticateToken(authString)
         .then(user => _authenticate(user))
         .catch(_authError);
     }
 
+    /**
+     * Authenticate a user
+     * @param {*} user
+     */
     function _authenticate(user) {
       const capabilityCheck = !capability || user.can(capability);
       if (user && capabilityCheck) {
@@ -48,6 +60,9 @@ module.exports = capability => {
       }
     }
 
+    /**
+     * Invalid login
+     */
     function _authError() {
       next('Invalid User ID/Password');
     }
