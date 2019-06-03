@@ -1,11 +1,12 @@
 'use strict';
 
+const rootDir = process.cwd();
 process.env.SECRET = 'test';
 
-const { startDB, stopDB } = require('../supergoose.js');
-const auth = require('../../../src/auth/middleware.js');
-const Users = require('../../../src/auth/users-model.js');
-const Roles = require('../../../src/auth/roles-model.js');
+const { startDB, stopDB } = require(`${rootDir}/__tests__/supergoose.js`);
+const auth = require(`${rootDir}/src/auth/middleware.js`);
+const Users = require(`${rootDir}/src/auth/users-model.js`);
+const Roles = require(`${rootDir}/src/auth/roles-model.js`);
 
 let users = {
   admin: { username: 'admin', password: 'password', role: 'admin' },

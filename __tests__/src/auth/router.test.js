@@ -1,14 +1,15 @@
 'use strict';
 
+const rootDir = process.cwd();
 process.env.SECRET = 'test';
 
 const jwt = require('jsonwebtoken');
 
-const Roles = require('../../../src/auth/roles-model.js');
-const server = require('../../../src/app.js').server;
-const supergoose = require('../supergoose.js');
+const supergoose = require(`${rootDir}/__tests__/supergoose.js`);
+const server = require(`${rootDir}/src/app.js`);
+const Roles = require(`${rootDir}/src/auth/roles-model.js`);
 
-const mockRequest = supergoose.server(server);
+const mockRequest = supergoose.server(server.app);
 
 let users = {
   admin: { username: 'admin', password: 'password', role: 'admin' },
@@ -46,6 +47,7 @@ describe('Auth Router', () => {
           .post('/signup')
           .send(users[userType])
           .then(results => {
+            console.log('signup', users[userType], results.text);
             var token = jwt.verify(results.text, process.env.SECRET);
             id = token.id;
             encodedToken = results.text;
